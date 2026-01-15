@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: luiscepeda7/calificaciones-db:latest
+    container_name: calificaciones-db
+    environment:
+      POSTGRES_DB: calificaciones
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - calificaciones-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    image: luiscepeda7/calificaciones-backend:latest
+    container_name: calificaciones-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/calificaciones
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - calificaciones-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/alumnos"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend React + TypeScript
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8081/api
+    container_name: calificaciones-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - calificaciones-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  calificaciones-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
