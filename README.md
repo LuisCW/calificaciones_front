@@ -39,7 +39,7 @@ curl -O https://raw.githubusercontent.com/LuisCW/calificaciones_front/main/docke
 # Iniciar todos los servicios
 docker compose -f docker-compose.hub.yml up -d
 
-Acceder a la url de frontend para ver la ejecución
+Acceder a la url de frontend para ver la ejecución, verificar en docker desktop en logs que todos los servidores hayan iniciado
 ```
 
 **URLs de acceso:**
