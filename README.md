@@ -126,12 +126,146 @@ calificaciones_front/
 └── README.md                  # Este archivo
 ```
 
-
----
-
-⭐ Si este proyecto te fue útil, no olvides darle una estrella en GitHub!
-
----
-
 ## Detener
 `docker compose down`
+
+### Variables de Entorno
+
+**Frontend (.env):**
+```env
+VITE_API_URL=http://localhost:8081/api
+```
+
+**Backend (application.properties):**
+```properties
+spring.datasource.url=jdbc:postgresql://db:5432/calificaciones
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+server.port=8081
+```
+
+### Puertos Configurados
+
+| Servicio | Puerto Host | Puerto Contenedor |
+|----------|------------|-------------------|
+| Frontend | 3000 | 80 |
+| Backend | 8081 | 8081 |
+| PostgreSQL | 5433 | 5432 |
+
+## API Endpoints
+
+### Alumnos
+- `GET /api/alumnos` - Listar todos
+- `POST /api/alumnos` - Crear alumno
+- `PUT /api/alumnos/{id}` - Actualizar alumno
+- `DELETE /api/alumnos/{id}` - Eliminar alumno
+
+### Materias
+- `GET /api/materias` - Listar todas
+- `POST /api/materias` - Crear materia
+- `PUT /api/materias/{id}` - Actualizar materia
+- `DELETE /api/materias/{id}` - Eliminar materia
+
+### Notas
+- `GET /api/notas` - Listar todas
+- `GET /api/notas/alumno/{id}` - Notas por alumno
+- `POST /api/notas` - Registrar nota
+- `PUT /api/notas/{id}` - Actualizar nota
+- `DELETE /api/notas/{id}` - Eliminar nota
+
+## Construcción Manual
+
+### Construir imagen del frontend
+```bash
+docker build -t luiscepeda7/calificaciones-frontend:latest \
+  --build-arg VITE_API_URL=http://localhost:8081/api .
+```
+
+### Construir solo el frontend (sin Docker)
+```bash
+npm run build
+```
+
+Los archivos compilados estarán en `dist/`
+
+## Características Técnicas
+
+### Frontend
+- Componentes funcionales con React Hooks
+- TypeScript para type-safety
+- Routing con React Router v7
+- Estado local con useState
+- Manejo de formularios con validación
+- Notificaciones toast
+- Modales para CRUD
+- Diseño responsive
+- Variables CSS para temas
+
+### Backend
+- API RESTful
+- Spring Data JPA
+- Validación de datos
+- CORS configurado
+- Arquitectura en capas (Controller → Service → Repository)
+- DTOs para transferencia de datos
+
+### Docker
+- Multi-stage build (Node + Nginx)
+- Imágenes optimizadas (Alpine)
+- Configuración Nginx para SPA
+- Red Docker compartida
+- Volúmenes persistentes para PostgreSQL
+- Health checks
+
+##  Solución de Problemas
+
+### El frontend no se conecta al backend
+
+**Problema:** Error de conexión o CORS
+
+**Solución:**
+```bash
+# Verificar que el backend está corriendo
+docker compose ps
+
+# Ver logs del backend
+docker compose logs backend
+
+# Reiniciar servicios
+docker compose restart
+```
+
+### La base de datos no tiene datos
+
+**Problema:** Base de datos vacía
+
+**Solución:**
+```bash
+# Ejecutar script de inserción de datos
+cd backend
+docker compose exec backend bash
+# Dentro del contenedor, ejecutar script de datos
+```
+
+### Puerto ya en uso
+
+**Problema:** `port is already allocated`
+
+**Solución:**
+```bash
+# Cambiar puertos en docker-compose.yml
+# O detener el servicio que usa el puerto
+```
+
+### Error al construir la imagen
+
+**Problema:** Falla en `npm ci` o `npm run build`
+
+**Solución:**
+```bash
+# Limpiar caché de Docker
+docker builder prune -a
+
+# Reconstruir
+docker compose build --no-cache
+```
